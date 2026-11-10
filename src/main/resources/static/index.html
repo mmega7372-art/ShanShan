@@ -62,8 +62,9 @@
             line-height: 75px; 
             box-shadow: 0 3px 6px rgba(0,0,0,0.3); 
             text-align: center;
+            user-select: none;
         }
-        .card-back { background: #2980b9; color: #fff; font-size: 20px; line-height: 75px; }
+        .card-back { background: #2980b9; color: #fff; font-size: 20px; line-height: 75px; cursor: pointer; }
         .red { color: red; }
 
         .center-table { 
@@ -75,9 +76,22 @@
             display: flex; 
             justify-content: center; 
             align-items: center; 
-            gap: 10px; 
+            gap: 15px; 
         }
-        .deck-pile { width: 40px; height: 60px; background: #c0392b; border: 1.5px solid #fff; border-radius: 4px; line-height: 60px; font-size: 18px; font-weight: bold; }
+        .deck-pile { 
+            width: 45px; 
+            height: 65px; 
+            background: #c0392b; 
+            border: 2px solid #fff; 
+            border-radius: 5px; 
+            line-height: 65px; 
+            font-size: 20px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+            transition: transform 0.1s;
+        }
+        .deck-pile:active { transform: scale(0.95); }
 
         .btn { 
             background: #ffd700; 
@@ -105,7 +119,7 @@
 <body>
 
 <div class="board">
-    <h2>♠️ ရှမ်းကိုးမီး မျက်နှာချင်းဆိုင် ♣️</h2>
+    <h2>♠️ ရှမ်းကိုးမီး  ♣️</h2>
 
     <!-- Setup Panel -->
     <div id="setup-panel">
@@ -131,9 +145,9 @@
 
         <!-- Center Table -->
         <div class="center-table">
-            <div class="deck-pile">🂠</div>
+            <div class="deck-pile" onclick="drawCard()" title="ကဒ်ဆွဲရန် နှိပ်ပါ">🂠</div>
             <div>
-                <div id="game-status" style="font-size: 14px; color: #ffd700;">ကစားနေသည်</div>
+                <div id="game-status" style="font-size: 13px; color: #ffd700;">(ကဒ်ဆွဲရန် အလယ်ဖဲကိုနှိပ်ပါ)</div>
             </div>
         </div>
 
@@ -146,7 +160,6 @@
 
         <!-- Action Buttons -->
         <div id="action-buttons">
-            <button class="btn btn-success" id="draw-btn" onclick="drawCard()">ကတ်ထပ်ဆွဲမည်</button>
             <button class="btn btn-danger" id="stand-btn" onclick="standGame()">ရပ်မည် (Stand)</button>
         </div>
 
@@ -159,6 +172,10 @@
     let stompClient = null;
     let playerName = "";
     let roomId = "";
+    
+    // ဖွင့်ပြီးသား ကဒ်တွေရဲ့ Index များကို မှတ်ထားရန် Set တစ်ခု သုံးမည်
+    let revealedCards = new Set();
+    let lastHandSignature = "";
 
     function connect() {
         playerName = document.getElementById('playerName').value.trim();
@@ -215,11 +232,23 @@
     }
 
     function restartGame() {
+        // ပွဲသစ်စလျှင် ဖွင့်ထားတဲ့ ကဒ် မှတ်ဉာဏ်များကို ရှင်းလင်းပေးမည်
+        revealedCards.clear();
+        lastHandSignature = "";
         stompClient.send("/app/game.action", {}, JSON.stringify({
             type: "START",
             roomId: roomId,
             playerName: playerName
         }));
+    }
+
+    function flipCard(element, index, cardText, isRed) {
+        revealedCards.add(index); // ဤကဒ်ကို ဖွင့်ပြီးကြောင်း မှတ်သားမည်
+        element.innerText = cardText;
+        element.classList.remove('card-back');
+        if (isRed) element.classList.add('red');
+        element.style.background = "#fff";
+        element.removeAttribute('onclick'); // ထပ်နှိပ်၍မရတော့အောင် ဖြုတ်မည်
     }
 
     function showGameState(data) {
@@ -232,29 +261,56 @@
         let oppCardsHtml = "";
         let myScoreText = "-";
         let oppScoreText = "-";
-        let opponentNameDisplay = "ပြိုင်ဘက် (စောင့်ဆိုင်းနေသည်)";
+        let opponentNameDisplay = "ပြိုင်ဘက်";
 
         for (let [name, pData] of Object.entries(players)) {
             let cardsHtml = "";
-            pData.cards.forEach(card => {
+            let cardCount = pData.cards.length;
+
+            // ဖဲအသစ်စဝေချိန် (ကဒ်အရေအတွက်ပြောင်းသွားလျှင်) ဖွင့်ထားသော မှတ်ဉာဏ်ကို အလိုအလျောက် စီမံမည်
+            let handSig = pData.cards.map(c => c.suit + c.value).join(',');
+            if (name === playerName && handSig !== lastHandSignature) {
+                // အကယ်၍ ပွဲအသစ်စခြင်း (ကဒ် ၂ ကဒ်) ဖြစ်လျှင် Revealed ကို ရှင်းမည်
+                if (cardCount === 2 && lastHandSignature !== "") {
+                    revealedCards.clear();
+                }
+                lastHandSignature = handSig;
+            }
+
+            pData.cards.forEach((card, index) => {
                 let isRed = (card.suit === '♥' || card.suit === '♦');
                 let colorClass = isRed ? "card red" : "card";
                 let valStr = card.value === 1 ? 'A' : (card.value === 11 ? 'J' : (card.value === 12 ? 'Q' : (card.value === 13 ? 'K' : card.value)));
-                cardsHtml += `<div class="${colorClass}">${valStr}${card.suit}</div>`;
+                
+                if (name === playerName) {
+                    // အကယ်၍ ဒီကဒ်ကို အရင်က ဖွင့်ထားပြီးသား ဖြစ်လျှင် (သို့မဟုတ် ပွဲပြီးသွားလျှင်) ပွင့်လျက်သား ပြမယ်
+                    if (revealedCards.has(index) || state.status === "FINISHED") {
+                        cardsHtml += `<div class="${colorClass}">${valStr}${card.suit}</div>`;
+                    } else {
+                        // မဖွင့်ရသေးသော ကဒ်များ (အစပိုင်း ၂ ကဒ် နှင့် ဆွဲထားသော တတိယကဒ်)
+                        cardsHtml += `<div class="card card-back" onclick="flipCard(this, ${index}, '${valStr}${card.suit}', ${isRed})">🂠</div>`;
+                    }
+                } else {
+                    opponentNameDisplay = name;
+                    if (state.status === "FINISHED") {
+                        cardsHtml += `<div class="${colorClass}">${valStr}${card.suit}</div>`;
+                    } else {
+                        if (cardCount === 3 && index === 2) {
+                            cardsHtml += `<div class="card card-back" style="background:#2980b9; color:#fff;">၃ကဒ်</div>`;
+                        } else {
+                            cardsHtml += `<div class="card card-back">?</div>`;
+                        }
+                    }
+                }
             });
 
             if (name === playerName) {
                 myCardsHtml = cardsHtml;
-                myScoreText = `အမှတ်: ${pData.score} (倍率: ${pData.multiplier}x) ${pData.ready ? '✓ (ရပ်ပြီး)' : ''}`;
+                myScoreText = `အမှတ်: ${pData.score} (: ${pData.multiplier}x) ${pData.ready ? '✓ (ရပ်ပြီး)' : ''}`;
                 document.getElementById('my-name').innerText = name + " (သင်)";
             } else {
-                opponentNameDisplay = name;
-                if (state.status === "FINISHED") {
-                    oppCardsHtml = cardsHtml;
-                } else {
-                    oppCardsHtml = `<div class="card card-back">?</div><div class="card card-back">?</div>`;
-                }
-                oppScoreText = state.status === "FINISHED" ? `အမှတ်: ${pData.score} (倍率: ${pData.multiplier}x)` : `အမှတ်: ?`;
+                oppCardsHtml = cardsHtml;
+                oppScoreText = state.status === "FINISHED" ? `အမှတ်: ${pData.score} (: ${pData.multiplier}x)` : `ကဒ်အရေအတွက်: ${cardCount} ကဒ်`;
             }
         }
 
