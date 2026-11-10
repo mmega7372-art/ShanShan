@@ -37,7 +37,7 @@ public class GameState {
     }
 
     public void drawCard(String playerName) {
-        if ("FINISHED".equals(status)) return; // ပွဲပြီးသွားရင် ထပ်ဆွဲလို့မရပါ
+        if ("FINISHED".equals(status)) return;
 
         PlayerData player = players.get(playerName);
         if (player != null && player.getCards().size() < 3 && !deck.isEmpty()) {
@@ -78,26 +78,55 @@ public class GameState {
     private void determineWinner() {
         String bestPlayer = null;
         int maxScore = -1;
-        int minCardCount = 99; // ကဒ်အရေအတွက် နည်းလေ (၂ ကဒ်က ၃ ကဒ်ထက် နည်းလေ) အသာစီးရလေ ဖြစ်ရန်
+        int minCardCount = 99; 
+        int maxMultiplier = 0; 
+        boolean isTie = false;
 
         for (Map.Entry<String, PlayerData> entry : players.entrySet()) {
             PlayerData pData = entry.getValue();
             int score = pData.getScore();
             int cardCount = pData.getCards().size();
+            int multiplier = pData.getMultiplier();
 
-            if (score > maxScore) {
+            if (bestPlayer == null) {
+                bestPlayer = entry.getKey();
                 maxScore = score;
                 minCardCount = cardCount;
-                bestPlayer = entry.getKey();
-            } else if (score == maxScore) {
-                // အမှတ်တူနေလျှင် ကဒ် ၂ ကဒ်ရှိသူ (ပိုနည်းသူ) က အနိုင်ရမည်
-                if (cardCount < minCardCount) {
+                maxMultiplier = multiplier;
+            } else {
+                if (score > maxScore) {
+                    maxScore = score;
                     minCardCount = cardCount;
+                    maxMultiplier = multiplier;
                     bestPlayer = entry.getKey();
+                    isTie = false;
+                } else if (score == maxScore) {
+                    // (၁) အမှတ်တူလျှင် ကဒ်အရေအတွက် နည်းသူ (၂ ကဒ်ဆွဲသူ) က နိုင်မည်
+                    if (cardCount < minCardCount) {
+                        minCardCount = cardCount;
+                        maxMultiplier = multiplier;
+                        bestPlayer = entry.getKey();
+                        isTie = false;
+                    } else if (cardCount == minCardCount) {
+                        // (၂) ကဒ်အရေအတွက်ပါ တူနေလျှင် မြှောက်ကြိမ် (Multiplier) ပိုကြီးသူက နိုင်မည်
+                        if (multiplier > maxMultiplier) {
+                            maxMultiplier = multiplier;
+                            bestPlayer = entry.getKey();
+                            isTie = false;
+                        } else if (multiplier == maxMultiplier) {
+                            // အားလုံးတူနေလျှင် သရေ (Tie)
+                            isTie = true;
+                        }
+                    }
                 }
             }
         }
-        this.winner = bestPlayer;
+
+        if (isTie) {
+            this.winner = null;
+        } else {
+            this.winner = bestPlayer;
+        }
     }
 
     public Map<String, PlayerData> getPlayers() { return players; }
