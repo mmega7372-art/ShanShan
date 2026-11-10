@@ -119,7 +119,7 @@
 <body>
 
 <div class="board">
-    <h2>♠️ ရှမ်းကိုးမီး  ♣️</h2>
+    <h2>♠️ ရှမ်းကိုးမီး ♣️</h2>
 
     <!-- Setup Panel -->
     <div id="setup-panel">
@@ -155,7 +155,7 @@
         <div class="player-box">
             <h4 id="my-name">ကျွန်ုပ်</h4>
             <div id="my-cards"></div>
-            <div id="my-info">အမှတ်: -</div>
+            <div id="my-info">အမှတ်: ဖဲလှန်ပါ</div>
         </div>
 
         <!-- Action Buttons -->
@@ -173,7 +173,6 @@
     let playerName = "";
     let roomId = "";
     
-    // ဖွင့်ပြီးသား ကဒ်တွေရဲ့ Index များကို မှတ်ထားရန် Set တစ်ခု သုံးမည်
     let revealedCards = new Set();
     let lastHandSignature = "";
 
@@ -232,7 +231,6 @@
     }
 
     function restartGame() {
-        // ပွဲသစ်စလျှင် ဖွင့်ထားတဲ့ ကဒ် မှတ်ဉာဏ်များကို ရှင်းလင်းပေးမည်
         revealedCards.clear();
         lastHandSignature = "";
         stompClient.send("/app/game.action", {}, JSON.stringify({
@@ -243,15 +241,21 @@
     }
 
     function flipCard(element, index, cardText, isRed) {
-        revealedCards.add(index); // ဤကဒ်ကို ဖွင့်ပြီးကြောင်း မှတ်သားမည်
+        revealedCards.add(index);
         element.innerText = cardText;
         element.classList.remove('card-back');
         if (isRed) element.classList.add('red');
         element.style.background = "#fff";
-        element.removeAttribute('onclick'); // ထပ်နှိပ်၍မရတော့အောင် ဖြုတ်မည်
+        element.removeAttribute('onclick');
+
+        // ကဒ်လှန်လိုက်တိုင်း အမှတ်ကို အသစ်ပြန်တွက်ချက်ပြသရန်
+        updateMyScoreDisplay();
     }
 
+    let currentGameData = null; // လက်ရှိဂိမ်းအချက်အလက်ကို သိမ်းထားရန်
+
     function showGameState(data) {
+        currentGameData = data;
         const state = data.state;
         const players = state.players;
         
@@ -259,18 +263,14 @@
 
         let myCardsHtml = "";
         let oppCardsHtml = "";
-        let myScoreText = "-";
-        let oppScoreText = "-";
         let opponentNameDisplay = "ပြိုင်ဘက်";
 
         for (let [name, pData] of Object.entries(players)) {
             let cardsHtml = "";
             let cardCount = pData.cards.length;
 
-            // ဖဲအသစ်စဝေချိန် (ကဒ်အရေအတွက်ပြောင်းသွားလျှင်) ဖွင့်ထားသော မှတ်ဉာဏ်ကို အလိုအလျောက် စီမံမည်
             let handSig = pData.cards.map(c => c.suit + c.value).join(',');
             if (name === playerName && handSig !== lastHandSignature) {
-                // အကယ်၍ ပွဲအသစ်စခြင်း (ကဒ် ၂ ကဒ်) ဖြစ်လျှင် Revealed ကို ရှင်းမည်
                 if (cardCount === 2 && lastHandSignature !== "") {
                     revealedCards.clear();
                 }
@@ -283,11 +283,9 @@
                 let valStr = card.value === 1 ? 'A' : (card.value === 11 ? 'J' : (card.value === 12 ? 'Q' : (card.value === 13 ? 'K' : card.value)));
                 
                 if (name === playerName) {
-                    // အကယ်၍ ဒီကဒ်ကို အရင်က ဖွင့်ထားပြီးသား ဖြစ်လျှင် (သို့မဟုတ် ပွဲပြီးသွားလျှင်) ပွင့်လျက်သား ပြမယ်
                     if (revealedCards.has(index) || state.status === "FINISHED") {
                         cardsHtml += `<div class="${colorClass}">${valStr}${card.suit}</div>`;
                     } else {
-                        // မဖွင့်ရသေးသော ကဒ်များ (အစပိုင်း ၂ ကဒ် နှင့် ဆွဲထားသော တတိယကဒ်)
                         cardsHtml += `<div class="card card-back" onclick="flipCard(this, ${index}, '${valStr}${card.suit}', ${isRed})">🂠</div>`;
                     }
                 } else {
@@ -306,19 +304,23 @@
 
             if (name === playerName) {
                 myCardsHtml = cardsHtml;
-                myScoreText = `အမှတ်: ${pData.score} (: ${pData.multiplier}x) ${pData.ready ? '✓ (ရပ်ပြီး)' : ''}`;
-                document.getElementById('my-name').innerText = name + " (သင်)";
             } else {
                 oppCardsHtml = cardsHtml;
-                oppScoreText = state.status === "FINISHED" ? `အမှတ်: ${pData.score} (: ${pData.multiplier}x)` : `ကဒ်အရေအတွက်: ${cardCount} ကဒ်`;
             }
         }
 
         document.getElementById('my-cards').innerHTML = myCardsHtml;
-        document.getElementById('my-info').innerText = myScoreText;
         document.getElementById('opponent-name').innerText = opponentNameDisplay;
         document.getElementById('opponent-cards').innerHTML = oppCardsHtml;
-        document.getElementById('opponent-info').innerText = oppScoreText;
+
+        // ကိုယ့်အမှတ်ပြသမှုကို Update လုပ်ရန်
+        updateMyScoreDisplay();
+
+        // ပြိုင်ဘက် အချက်အလက်
+        if (players[opponentNameDisplay]) {
+            let oppCardCount = players[opponentNameDisplay].cards.length;
+            document.getElementById('opponent-info').innerText = state.status === "FINISHED" ? `အမှတ်: ${players[opponentNameDisplay].score} (: ${players[opponentNameDisplay].multiplier}x)` : `ကဒ်အရေအတွက်: ${oppCardCount} ကဒ်`;
+        }
 
         const resultContainer = document.getElementById('result-container');
         const restartBtn = document.getElementById('restart-btn');
@@ -338,6 +340,38 @@
             actionButtons.classList.remove('hidden');
             resultContainer.classList.add('hidden');
             restartBtn.classList.add('hidden');
+        }
+    }
+
+    // ကဒ်လှန်ပြီးမှ အမှတ်နှင့် အထူးအမှတ် (Multiplier) ကို တွက်ချက်ပြသသည့် လုပ်ဆောင်ချက်
+    function updateMyScoreDisplay() {
+        if (!currentGameData) return;
+        const state = currentGameData.state;
+        const pData = state.players[playerName];
+        if (!pData) return;
+
+        let totalCards = pData.cards.length;
+        let revealedCount = 0;
+
+        // ကိုယ့်မှာရှိတဲ့ ကဒ်တွေထဲက ဘယ်နှစ်ကဒ် လှန်ပြီးပြီလဲ စစ်မည်
+        for (let i = 0; i < totalCards; i++) {
+            if (revealedCards.has(i) || state.status === "FINISHED") {
+                revealedCount++;
+            }
+        }
+
+        // ကဒ်အားလုံး (သို့မဟုတ် အနည်းဆုံး အစပိုင်း ၂ ကဒ်) မလှန်ရသေးရင် အမှတ်မပြသေးဘဲ ထားမည်
+        // (ဥပမာ - ပွဲပြီးသွားရင်တော့ အကုန်ပြမယ်၊ မပြီးသေးရင် လှန်ထားတဲ့အရေအတွက်အပေါ် မူတည်မယ်)
+        if (state.status === "FINISHED") {
+            document.getElementById('my-info').innerText = `အမှတ်: ${pData.score} (: ${pData.multiplier}x) ${pData.ready ? '✓ (ရပ်ပြီး)' : ''}`;
+            document.getElementById('my-name').innerText = playerName + " (သင်)";
+        } else if (revealedCount < totalCards) {
+            document.getElementById('my-info').innerText = `အမှတ်: ဖဲအားလုံးလှန်ပါ (${revealedCount}/${totalCards} လှန်ပြီး)`;
+            document.getElementById('my-name').innerText = playerName + " (သင်)";
+        } else {
+            // ကဒ်အားလုံး လှန်ပြီးသွားမှ တကယ့်အမှတ်ကို ပေါ်ပြမည်
+            document.getElementById('my-info').innerText = `အမှတ်: ${pData.score} (: ${pData.multiplier}x) ${pData.ready ? '✓ (ရပ်ပြီး)' : ''}`;
+            document.getElementById('my-name').innerText = playerName + " (သင်)";
         }
     }
 </script>
