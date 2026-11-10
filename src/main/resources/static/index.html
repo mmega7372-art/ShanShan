@@ -37,7 +37,6 @@
         h4 { font-size: 16px; margin: 5px 0; }
         h5 { font-size: 14px; }
 
-        /* Setup Inputs */
         input[type="text"] {
             width: 90%;
             padding: 12px;
@@ -47,11 +46,9 @@
             margin-bottom: 10px;
         }
         
-        /* Player Sections */
         .player-box { background: rgba(0, 0, 0, 0.25); border-radius: 8px; padding: 8px; margin: 6px 0; border: 2px dashed #2ecc71; }
         .opponent-box { border-color: #e74c3c; }
 
-        /* Card Styles optimized for iPhone Pro Max screens */
         .card { 
             display: inline-block; 
             width: 50px; 
@@ -69,7 +66,6 @@
         .card-back { background: #2980b9; color: #fff; font-size: 20px; line-height: 75px; }
         .red { color: red; }
 
-        /* Center Table */
         .center-table { 
             background: #144614; 
             border: 1.5px solid #ffd700; 
@@ -83,7 +79,6 @@
         }
         .deck-pile { width: 40px; height: 60px; background: #c0392b; border: 1.5px solid #fff; border-radius: 4px; line-height: 60px; font-size: 18px; font-weight: bold; }
 
-        /* Buttons & Touch Optimization (Min 44px height for iOS touch targets) */
         .btn { 
             background: #ffd700; 
             color: #000; 
@@ -104,6 +99,7 @@
         .status { font-size: 15px; margin: 4px 0; color: #ffeb3b; }
         .result-box { background: #ffd700; color: #000; font-size: 18px; font-weight: bold; padding: 10px; border-radius: 8px; margin-top: 8px; }
         #error-log { color: #ff6b6b; font-weight: bold; margin-top: 8px; font-size: 14px; }
+        .hidden { display: none !important; }
     </style>
 </head>
 <body>
@@ -111,9 +107,187 @@
 <div class="board">
     <h2>♠️ ရှမ်းကိုးမီး မျက်နှာချင်းဆိုင် ♣️</h2>
 
-    <!-- Connection / Room Setup -->
+    <!-- Setup Panel -->
     <div id="setup-panel">
         <input type="text" id="playerName" placeholder="သင့်အမည် ထည့်ပါ"><br>
         <input type="text" id="roomId" placeholder="အခန်းနံပါတ် (ဥပမာ - 123)"><br>
         <button class="btn" onclick="connect()">အခန်းသို့ ဝင်မည်</button>
-        <div id="
+        <div id="error-log"></div>
+    </div>
+
+    <!-- Game Panel -->
+    <div id="game-panel" class="hidden">
+        <div class="status" id="room-display">အခန်း: -</div>
+        
+        <!-- Opponent Box -->
+        <div class="player-box opponent-box">
+            <h4 id="opponent-name">ပြိုင်ဘက်</h4>
+            <div id="opponent-cards">
+                <div class="card card-back">?</div>
+                <div class="card card-back">?</div>
+            </div>
+            <div id="opponent-info">အမှတ်: -</div>
+        </div>
+
+        <!-- Center Table -->
+        <div class="center-table">
+            <div class="deck-pile">🂠</div>
+            <div>
+                <div id="game-status" style="font-size: 14px; color: #ffd700;">ကစားနေသည်</div>
+            </div>
+        </div>
+
+        <!-- My Box -->
+        <div class="player-box">
+            <h4 id="my-name">ကျွန်ုပ်</h4>
+            <div id="my-cards"></div>
+            <div id="my-info">အမှတ်: -</div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div id="action-buttons">
+            <button class="btn btn-success" id="draw-btn" onclick="drawCard()">ကတ်ထပ်ဆွဲမည်</button>
+            <button class="btn btn-danger" id="stand-btn" onclick="standGame()">ရပ်မည် (Stand)</button>
+        </div>
+
+        <div id="result-container" class="result-box hidden"></div>
+        <button class="btn hidden" id="restart-btn" onclick="restartGame()">ပွဲသစ်စရန်</button>
+    </div>
+</div>
+
+<script>
+    let stompClient = null;
+    let playerName = "";
+    let roomId = "";
+
+    function connect() {
+        playerName = document.getElementById('playerName').value.trim();
+        roomId = document.getElementById('roomId').value.trim();
+        const errorLog = document.getElementById('error-log');
+
+        if (!playerName || !roomId) {
+            errorLog.innerText = "ကျေးဇူးပြု၍ အမည်နှင့် အခန်းနံပါတ် ဖြည့်ပါ။";
+            return;
+        }
+        errorLog.innerText = "";
+
+        const socket = new SockJS('/ws-game');
+        stompClient = Stomp.over(socket);
+        stompClient.debug = null; // Disable debug logs
+
+        stompClient.connect({}, function (frame) {
+            console.log('Connected: ' + frame);
+            
+            // Subscribe to room topic
+            stompClient.subscribe('/topic/room/' + roomId, function (response) {
+                showGameState(JSON.parse(response.body));
+            });
+
+            // Send Join Action
+            stompClient.send("/app/game.action", {}, JSON.stringify({
+                type: "JOIN",
+                roomId: roomId,
+                playerName: playerName
+            }));
+
+            // Switch UI panels
+            document.getElementById('setup-panel').classList.add('hidden');
+            document.getElementById('game-panel').classList.remove('hidden');
+            document.getElementById('room-display').innerText = "အခန်းနံပါတ်: " + roomId;
+
+        }, function (error) {
+            console.error('STOMP error:', error);
+            errorLog.innerText = "ချိတ်ဆက်မှု မအောင်မြင်ပါ။ ထပ်ကြိုးစားပါ။";
+        });
+    }
+
+    function drawCard() {
+        stompClient.send("/app/game.action", {}, JSON.stringify({
+            type: "DRAW",
+            roomId: roomId,
+            playerName: playerName
+        }));
+    }
+
+    function standGame() {
+        stompClient.send("/app/game.action", {}, JSON.stringify({
+            type: "STAND",
+            roomId: roomId,
+            playerName: playerName
+        }));
+    }
+
+    function restartGame() {
+        stompClient.send("/app/game.action", {}, JSON.stringify({
+            type: "START",
+            roomId: roomId,
+            playerName: playerName
+        }));
+    }
+
+    function showGameState(data) {
+        const state = data.state;
+        const players = state.players;
+        
+        document.getElementById('room-display').innerText = "အခန်း: " + roomId + " | အခြေအနေ: " + (state.status === "FINISHED" ? "ပွဲပြီးပါပြီ" : "ကစားနေဆဲ");
+
+        let myCardsHtml = "";
+        let oppCardsHtml = "";
+        let myScoreText = "-";
+        let oppScoreText = "-";
+        let opponentNameDisplay = "ပြိုင်ဘက် (စောင့်ဆိုင်းနေသည်)";
+
+        for (let [name, pData] of Object.entries(players)) {
+            let cardsHtml = "";
+            pData.cards.forEach(card => {
+                let isRed = (card.suit === '♥' || card.suit === '♦');
+                let colorClass = isRed ? "card red" : "card";
+                let valStr = card.value === 1 ? 'A' : (card.value === 11 ? 'J' : (card.value === 12 ? 'Q' : (card.value === 13 ? 'K' : card.value)));
+                cardsHtml += `<div class="${colorClass}">${valStr}${card.suit}</div>`;
+            });
+
+            if (name === playerName) {
+                myCardsHtml = cardsHtml;
+                myScoreText = `အမှတ်: ${pData.score} (倍率: ${pData.multiplier}x) ${pData.ready ? '✓ (ရပ်ပြီး)' : ''}`;
+                document.getElementById('my-name').innerText = name + " (သင်)";
+            } else {
+                opponentNameDisplay = name;
+                if (state.status === "FINISHED") {
+                    oppCardsHtml = cardsHtml;
+                } else {
+                    oppCardsHtml = `<div class="card card-back">?</div><div class="card card-back">?</div>`;
+                }
+                oppScoreText = state.status === "FINISHED" ? `အမှတ်: ${pData.score} (倍率: ${pData.multiplier}x)` : `အမှတ်: ?`;
+            }
+        }
+
+        document.getElementById('my-cards').innerHTML = myCardsHtml;
+        document.getElementById('my-info').innerText = myScoreText;
+        document.getElementById('opponent-name').innerText = opponentNameDisplay;
+        document.getElementById('opponent-cards').innerHTML = oppCardsHtml;
+        document.getElementById('opponent-info').innerText = oppScoreText;
+
+        const resultContainer = document.getElementById('result-container');
+        const restartBtn = document.getElementById('restart-btn');
+        const actionButtons = document.getElementById('action-buttons');
+
+        if (state.status === "FINISHED") {
+            actionButtons.classList.add('hidden');
+            resultContainer.classList.remove('hidden');
+            restartBtn.classList.remove('hidden');
+
+            if (state.winner) {
+                resultContainer.innerText = state.winner === playerName ? "🎉 ဂုဏ်ယူပါတယ်! သင် နိုင်သွားပါပြီ! 🎉" : `🏆 အနိုင်ရရှိသူ: ${state.winner}`;
+            } else {
+                resultContainer.innerText = "🤝 သရေကျပါသည်!";
+            }
+        } else {
+            actionButtons.classList.remove('hidden');
+            resultContainer.classList.add('hidden');
+            restartBtn.classList.add('hidden');
+        }
+    }
+</script>
+
+</body>
+</html>
