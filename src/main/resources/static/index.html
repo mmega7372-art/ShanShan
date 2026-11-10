@@ -173,24 +173,21 @@
 
         const socket = new SockJS('/ws-game');
         stompClient = Stomp.over(socket);
-        stompClient.debug = null; // Disable debug logs
+        stompClient.debug = null; 
 
         stompClient.connect({}, function (frame) {
             console.log('Connected: ' + frame);
             
-            // Subscribe to room topic
             stompClient.subscribe('/topic/room/' + roomId, function (response) {
                 showGameState(JSON.parse(response.body));
             });
 
-            // Send Join Action
             stompClient.send("/app/game.action", {}, JSON.stringify({
                 type: "JOIN",
                 roomId: roomId,
                 playerName: playerName
             }));
 
-            // Switch UI panels
             document.getElementById('setup-panel').classList.add('hidden');
             document.getElementById('game-panel').classList.remove('hidden');
             document.getElementById('room-display').innerText = "အခန်းနံပါတ်: " + roomId;
