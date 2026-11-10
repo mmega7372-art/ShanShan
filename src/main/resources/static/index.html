@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ရှမ်းကိုးမီး မျက်နှာချင်းဆိုင်</title>
+    <title>ရှမ်းကိုးမီး </title>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     <style>
@@ -118,7 +118,7 @@
 <body>
 
 <div class="board">
-    <h2>♠️ ရှမ်းကိုးမီး မျက်နှာချင်းဆိုင် ♣️</h2>
+    <h2>♠️ ရှမ်းကိုးမီး ♣️</h2>
 
     <!-- Setup Panel -->
     <div id="setup-panel">
@@ -303,7 +303,7 @@
                         cardsHtml += `<div class="${colorClass}">${valStr}${card.suit}</div>`;
                     } else {
                         if (cardCount === 3 && index === 2) {
-                            cardsHtml += `<div class="card card-back" style="background:#2980b9; color:#fff;">၃ကဒ်</div>`;
+                            cardsHtml += `<div class="card card-back" style="background:#2980b9; color:#fff;">?</div>`;
                         } else {
                             cardsHtml += `<div class="card card-back">?</div>`;
                         }
@@ -326,7 +326,7 @@
 
         if (players[opponentNameDisplay]) {
             let oppCardCount = players[opponentNameDisplay].cards.length;
-            document.getElementById('opponent-info').innerText = state.status === "FINISHED" ? `အမှတ်: ${players[opponentNameDisplay].score} (倍率: ${players[opponentNameDisplay].multiplier}x)` : `ကဒ်အရေအတွက်: ${oppCardCount} ကဒ်`;
+            document.getElementById('opponent-info').innerText = state.status === "FINISHED" ? `အမှတ်: ${players[opponentNameDisplay].score} (: ${players[opponentNameDisplay].multiplier}x)` : `ကဒ်အရေအတွက်: ${oppCardCount} ကဒ်`;
         }
 
         const resultContainer = document.getElementById('result-container');
@@ -366,13 +366,13 @@
         }
 
         if (state.status === "FINISHED") {
-            document.getElementById('my-info').innerText = `အမှတ်: ${pData.score} (倍率: ${pData.multiplier}x) ${pData.ready ? '✓ (ရပ်ပြီး)' : ''}`;
+            document.getElementById('my-info').innerText = `အမှတ်: ${pData.score} (: ${pData.multiplier}x) ${pData.ready ? '✓ (ရပ်ပြီး)' : ''}`;
             document.getElementById('my-name').innerText = playerName + " (သင်)";
         } else if (revealedCount < totalCards) {
             document.getElementById('my-info').innerText = `အမှတ်: ဖဲအားလုံးလှန်ပါ (${revealedCount}/${totalCards} လှန်ပြီး)`;
             document.getElementById('my-name').innerText = playerName + " (သင်)";
         } else {
-            document.getElementById('my-info').innerText = `အမှတ်: ${pData.score} (倍率: ${pData.multiplier}x) ${pData.ready ? '✓ (ရပ်ပြီး)' : ''}`;
+            document.getElementById('my-info').innerText = `အမှတ်: ${pData.score} (: ${pData.multiplier}x) ${pData.ready ? '✓ (ရပ်ပြီး)' : ''}`;
             document.getElementById('my-name').innerText = playerName + " (သင်)";
         }
     }
