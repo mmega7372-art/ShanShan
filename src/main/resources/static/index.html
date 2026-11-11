@@ -130,7 +130,6 @@
         .card-back { background: #2980b9; color: #fff; font-size: 15px; line-height: 56px; cursor: pointer; }
         .red { color: red; }
 
-        /* စနောက်သည့် စာသားများပေါ်မည့် Bubble ပုံစံ */
         .chat-bubble {
             position: absolute;
             bottom: 105%;
@@ -154,7 +153,6 @@
             100% { opacity: 0; transform: translate(-50%, -5px); display: none; }
         }
 
-        /* Quick Chat ခလုတ်များ */
         .quick-chat-container {
             display: flex;
             justify-content: center;
@@ -167,8 +165,8 @@
             color: #fff;
             border: 1px solid #ffd700;
             border-radius: 6px;
-            padding: 6px 10px;
-            font-size: 12px;
+            padding: 5px 8px;
+            font-size: 11px;
             font-family: 'Padauk', sans-serif;
             cursor: pointer;
             transition: background 0.2s;
@@ -208,16 +206,16 @@
         <input type="text" id="roomId" placeholder="အခန်းနံပါတ် (ဥပမာ - 123)"><br>
         <select id="gameMode">
             <optgroup label="🤖 ဘော့ (Bots) ပါဝင်သော Mode များ">
-                <option value="bot_2">လူ ၁ ယောက် + ၁ bot🤖 (၂ ယောက်ဆော့)</option>
-                <option value="bot_3">လူ ၁ ယောက် + ၂ bots🤖 (၃ ယောက်ဆော့)</option>
-                <option value="bot_4">လူ ၁ ယောက် + ၃ bots🤖 (၄ ယောက်ဆော့)</option>
-                <option value="bot_5" selected>လူ ၁ ယောက် + ၄ bots🤖 (၅ ယောက်ဆော့)</option>
+                <option value="bot_2">လူ ၁ ယောက် + ၁ ဘော့</option>
+                <option value="bot_3">လူ ၁ ယောက် + ၂ ဘော့</option>
+                <option value="bot_4">လူ ၁ ယောက် + ၃ ဘော့</option>
+                <option value="bot_5" selected>လူ ၁ ယောက် + ၄ ဘော့</option>
             </optgroup>
             <optgroup label="👥 လူစစ်စစ်များသာ (Bot လုံးဝမပါ / PvP)">
-                <option value="pvp_2">လူ ၂ ယောက် (PvP)</option>
-                <option value="pvp_3">လူ ၃ ယောက် (PvP)</option>
-                <option value="pvp_4">လူ ၄ ယောက် (PvP)</option>
-                <option value="pvp_5">လူ ၅ ယောက် (PvP)</option>
+                <option value="pvp_2">လူစစ်စစ် ၂ ယောက် (PvP)</option>
+                <option value="pvp_3">လူစစ်စစ် ၃ ယောက် (PvP)</option>
+                <option value="pvp_4">လူစစ်စစ် ၄ ယောက် (PvP)</option>
+                <option value="pvp_5">လူစစ်စစ် ၅ ယောက် (PvP)</option>
             </optgroup>
         </select><br>
         <button class="btn" onclick="connect()">အခန်းသို့ ဝင်မည်</button>
@@ -228,18 +226,14 @@
     <div id="game-panel" class="hidden">
         <div class="status" id="room-display">အခန်း: -</div>
         
-        <!-- စားပွဲဝိုင်းပုံစံ -->
         <div class="table-felt">
-            <!-- ထိပ်ဘက်ရှိ ပြိုင်ဘက်များ -->
             <div id="opponents-container" class="opponents-ring"></div>
 
-            <!-- အလယ်က အနီကဒ် (Deck Pile) -->
             <div class="center-deck-area">
                 <div class="deck-pile" onclick="drawCard()" title="ကဒ်ဆွဲရန် နှိပ်ပါ">🂠</div>
                 <div id="game-status" style="font-size: 11px; color: #ffd700; margin-top: 2px;">(ဆွဲရန် ဖဲပုံကိုနှိပ်ပါ)</div>
             </div>
 
-            <!-- အောက်ဆုံးရှိ ကျွန်ုပ်၏ နေရာ -->
             <div class="my-box" id="my-seat-box">
                 <div id="my-name" style="font-weight: bold; font-size: 12px; color: #55efc4; margin-bottom: 2px;">ကျွန်ုပ်</div>
                 <div id="my-cards" style="display:flex; justify-content:center; gap:2px;"></div>
@@ -247,12 +241,15 @@
             </div>
         </div>
 
-        <!-- 💬 စနောက်ရန် စာသားခလုတ်များ (Quick Chat) -->
+        <!-- 💬 စနောက်ရန် စာသားခလုတ်များ -->
         <div class="quick-chat-container">
             <button class="chat-btn" onclick="sendChat('ဘူကောင်လေး🫵🏻')">ဘူကောင်လေး🫵🏻</button>
             <button class="chat-btn" onclick="sendChat('ဒါလေးများ😜')">ဒါလေးများ😜</button>
             <button class="chat-btn" onclick="sendChat('ကရော်ကရော်🤪')">ကရော်ကရော်🤪</button>
             <button class="chat-btn" onclick="sendChat('လာပြီဟေ့ 😎')">လာပြီဟေ့ 😎</button>
+            <button class="chat-btn" onclick="sendChat('ငိုပြီလေ 😭')">ငိုပြီလေ 😭</button>
+            <button class="chat-btn" onclick="sendChat('ရှယ်ပဲဗျို့ 🔥')">ရှယ်ပဲဗျို့ 🔥</button>
+            <button class="chat-btn" onclick="sendChat('သေသွားပြီ 💀')">သေသွားပြီ 💀</button>
         </div>
 
         <!-- Action Buttons -->
@@ -261,7 +258,7 @@
         </div>
 
         <div id="result-container" class="result-box hidden"></div>
-        <button class="btn" id="restart-btn" onclick="restartGame()">ပွဲသစ်စရန်</button>
+        <button class="btn" id="restart-btn" onclick="requestRestart()">ပွဲသစ်စရန်</button>
     </div>
 </div>
 
@@ -273,7 +270,6 @@
     let revealedCards = new Set();
     let lastHandSignature = "";
     let currentGameData = null;
-    let isCountingDown = false;
 
     function getSelectedModeConfig() {
         const val = document.getElementById('gameMode').value;
@@ -296,6 +292,7 @@
         }
         errorLog.innerText = "";
 
+        // Railway URL သို့ ချိတ်ဆက်ခြင်း
         const socket = new SockJS('https://shanshan.up.railway.app/ws-game');
         stompClient = Stomp.over(socket);
         stompClient.debug = null; 
@@ -305,7 +302,6 @@
                 showGameState(JSON.parse(response.body));
             });
 
-            // Chat အတွက် subscribe ထပ်လုပ်ခြင်း
             stompClient.subscribe('/topic/room/' + roomId + '/chat', function (response) {
                 showChatBubble(JSON.parse(response.body));
             });
@@ -343,7 +339,6 @@
         }));
     }
 
-    // စနောက်သော စာသားများ ပို့ရန်
     function sendChat(message) {
         if (!stompClient) return;
         stompClient.send("/app/game.chat", {}, JSON.stringify({
@@ -353,7 +348,6 @@
         }));
     }
 
-    // Chat Bubble ပြသရန်
     function showChatBubble(chatData) {
         let targetBox = null;
         if (chatData.playerName === playerName) {
@@ -363,7 +357,6 @@
         }
 
         if (targetBox) {
-            // အဟောင်းရှိရင် ဖျက်မည်
             let oldBubble = targetBox.querySelector('.chat-bubble');
             if (oldBubble) oldBubble.remove();
 
@@ -378,11 +371,9 @@
         }
     }
 
-    function restartGame() {
-        if (isCountingDown) return;
-        isCountingDown = true;
-
+    function requestRestart() {
         const restartBtn = document.getElementById('restart-btn');
+        if (restartBtn.disabled) return;
         restartBtn.disabled = true;
 
         let timeLeft = 3;
@@ -394,20 +385,21 @@
                 restartBtn.innerText = `ပွဲသစ်စရန် (${timeLeft}စက္ကန့်)...`;
             } else {
                 clearInterval(timer);
-                isCountingDown = false;
-                restartBtn.disabled = false;
-                restartBtn.innerText = "ပွဲသစ်စရန်";
-
-                revealedCards.clear();
-                lastHandSignature = "";
+                restartBtn.innerText = "စောင့်ဆိုင်းနေသည်...";
+                
                 const config = getSelectedModeConfig();
-                stompClient.send("/app/game.action", {}, JSON.stringify({
-                    type: "START",
-                    roomId: roomId,
-                    playerName: playerName,
-                    maxPlayers: config.maxPlayers,
-                    withBots: config.withBots
-                }));
+                if (stompClient && stompClient.connected) {
+                    stompClient.send("/app/game.action", {}, JSON.stringify({
+                        type: "RESTART_VOTE",
+                        roomId: roomId,
+                        playerName: playerName,
+                        maxPlayers: config.maxPlayers,
+                        withBots: config.withBots
+                    }));
+                } else {
+                    restartBtn.disabled = false;
+                    restartBtn.innerText = "ပွဲသစ်စရန်";
+                }
             }
         }, 1000);
     }
@@ -468,7 +460,7 @@
                         }
                     }
                 });
-                document.getElementById('my-name').innerText = playerName + " (သင်)";
+                document.getElementById('my-name').innerText = playerName + " (သင်) " + (pData.restartReady ? "✔️ (အသင့်)" : "");
             } else {
                 let oppCardDisplay = "";
                 pData.cards.forEach((oCard) => {
@@ -486,6 +478,10 @@
                 let scoreText = state.status === "FINISHED" 
                     ? `${pData.score}မှတ် (${pData.multiplier}x)` 
                     : `${cardCount}ချပ် ${pData.ready ? '✓' : ''}`;
+                
+                if (state.status === "FINISHED" && pData.restartReady) {
+                    scoreText += " ✔️";
+                }
 
                 opponentsHtml += `<div class="opponent-seat" id="seat-${name}">
                     <div style="font-weight: bold; font-size: 11px; color: #ff7675; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</div>
@@ -509,6 +505,24 @@
             resultContainer.classList.remove('hidden');
             restartBtn.classList.remove('hidden');
 
+            let myData = state.players[playerName];
+            
+            let totalPlayers = Object.keys(state.players).length;
+            let readyCount = 0;
+            for (let pName in state.players) {
+                if (state.players[pName].restartReady) {
+                    readyCount++;
+                }
+            }
+
+            if (myData && myData.restartReady) {
+                restartBtn.innerText = `စောင့်ဆိုင်းနေသည် (${readyCount}/${totalPlayers})...`;
+                restartBtn.disabled = true;
+            } else {
+                restartBtn.innerText = "ပွဲသစ်စရန်";
+                restartBtn.disabled = false;
+            }
+
             if (state.winner) {
                 resultContainer.innerText = state.winner === playerName ? "🎉 ဂုဏ်ယူပါတယ်! သင် နိုင်သွားပါပြီ! 🎉" : `🏆 အနိုင်ရရှိသူ: ${state.winner}`;
             } else {
@@ -517,9 +531,7 @@
         } else {
             actionButtons.classList.remove('hidden');
             resultContainer.classList.add('hidden');
-            if (!isCountingDown) {
-                restartBtn.classList.add('hidden');
-            }
+            restartBtn.classList.add('hidden');
         }
     }
 
@@ -538,12 +550,13 @@
             }
         }
 
+        let readyMark = pData.restartReady ? " ✔️(အသင့်)" : "";
         if (state.status === "FINISHED") {
-            document.getElementById('my-info').innerText = `အမှတ်: ${pData.score} (မြှောက်ကြိမ်: ${pData.multiplier}x) ${pData.ready ? '✓ (ရပ်ပြီး)' : ''}`;
+            document.getElementById('my-info').innerText = `အမှတ်: ${pData.score} (${pData.multiplier}x)${readyMark}`;
         } else if (revealedCount < totalCards) {
-            document.getElementById('my-info').innerText = `အမှတ်: ဖဲအားလုံးလှန်ပါ (${revealedCount}/${totalCards} လှန်ပြီး)`;
+            document.getElementById('my-info').innerText = `အမှတ်: ဖဲအားလုံးလှန်ပါ (${revealedCount}/${totalCards})`;
         } else {
-            document.getElementById('my-info').innerText = `အမှတ်: ${pData.score} (မြှောက်ကြိမ်: ${pData.multiplier}x) ${pData.ready ? '✓ (ရပ်ပြီး)' : ''}`;
+            document.getElementById('my-info').innerText = `အမှတ်: ${pData.score} (${pData.multiplier}x) ${pData.ready ? '✓ (ရပ်ပြီး)' : ''}`;
         }
     }
 </script>
