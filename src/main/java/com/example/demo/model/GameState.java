@@ -10,23 +10,21 @@ public class GameState {
     private int maxPlayers = 2; 
     private boolean withBots = true; // Default: Bot ဖြင့်
 
-    public void setMaxPlayers(int maxPlayers) { this.maxPlayers = maxPlayers; }
-    public int getMaxPlayers() { return maxPlayers; }
+    public synchronized void setMaxPlayers(int maxPlayers) { this.maxPlayers = maxPlayers; }
+    public synchronized int getMaxPlayers() { return maxPlayers; }
 
-    public void setWithBots(boolean withBots) { this.withBots = withBots; }
-    public boolean isWithBots() { return withBots; }
+    public synchronized void setWithBots(boolean withBots) { this.withBots = withBots; }
+    public synchronized boolean isWithBots() { return withBots; }
 
-    public void addPlayer(String playerName) {
+    public synchronized void addPlayer(String playerName) {
         players.computeIfAbsent(playerName, k -> new PlayerData());
     }
 
-    public void addBotsIfNeeded() {
-        // Mode ပြောင်းလဲသည့်အခါ Bot အဟောင်းများကို အရင်ဖယ်ရှားပေးခြင်း
+    public synchronized void addBotsIfNeeded() {
         players.keySet().removeIf(name -> name.startsWith("🤖 Bot"));
 
         if (!withBots) return; // PvP Mode ဖြစ်ပါက Bot လုံးဝ မထည့်ပါ
         
-        // ရွေးချယ်ထားသော maxPlayers အရေအတွက် ပြည့် تر တိုင်အောင် Bot အသစ်များ ထည့်မည်
         while (players.size() < maxPlayers) {
             int botIndex = players.size() + 1;
             String botName = "🤖 Bot " + botIndex;
@@ -34,7 +32,7 @@ public class GameState {
         }
     }
 
-    public void resetAndDeal() {
+    public synchronized void resetAndDeal() {
         deck.clear();
         winner = null;
         status = "PLAYING";
@@ -52,6 +50,7 @@ public class GameState {
         for (PlayerData player : players.values()) {
             player.getCards().clear();
             player.setReady(false);
+            player.setRestartReady(false); // ပွဲသစ်စသည်နှင့် restart status ကို ရှင်းမည်
             if (deck.size() >= 2) {
                 player.getCards().add(deck.remove(0));
                 player.getCards().add(deck.remove(0));
@@ -63,7 +62,7 @@ public class GameState {
         processBotActions();
     }
 
-    public void drawCard(String playerName) {
+    public synchronized void drawCard(String playerName) {
         if ("FINISHED".equals(status)) return;
 
         PlayerData player = players.get(playerName);
@@ -75,7 +74,7 @@ public class GameState {
         }
     }
 
-    public void setPlayerReady(String playerName) {
+    public synchronized void setPlayerReady(String playerName) {
         if ("FINISHED".equals(status)) return;
 
         PlayerData player = players.get(playerName);
@@ -85,7 +84,36 @@ public class GameState {
         }
     }
 
-    private void processBotActions() {
+    // ကစားသမားများမှ ပွဲသစ်စရန် တောင်းဆိုမှုကို စီမံခြင်း
+    public synchronized void handleRestartVote(String playerName) {
+        PlayerData player = players.get(playerName);
+        if (player != null) {
+            player.setRestartReady(true);
+        }
+
+        // Bot များပါဝင်ပါက Bot အားလုံးကို ချက်ချင်း Restart Ready ဖြစ်သည်ဟု သတ်မှတ်မည်
+        for (Map.Entry<String, PlayerData> entry : players.entrySet()) {
+            if (entry.getKey().startsWith("🤖 Bot")) {
+                entry.getValue().setRestartReady(true);
+            }
+        }
+
+        // အခန်းထဲရှိ Player အားလုံး (လူ + Bot) Restart Ready ဖြစ်မဖြစ် စစ်ဆေးမည်
+        boolean allRestartReady = true;
+        for (PlayerData pData : players.values()) {
+            if (!pData.isRestartReady()) {
+                allRestartReady = false;
+                break;
+            }
+        }
+
+        // အားလုံး အသင့်ဖြစ်ပါက ပွဲသစ် ချက်ချင်းစတင်မည်
+        if (allRestartReady) {
+            resetAndDeal();
+        }
+    }
+
+    private synchronized void processBotActions() {
         if (!withBots) return;
 
         for (Map.Entry<String, PlayerData> entry : players.entrySet()) {
@@ -104,7 +132,7 @@ public class GameState {
         checkGameEnd();
     }
 
-    private void checkGameEnd() {
+    private synchronized void checkGameEnd() {
         boolean allReady = true;
         for (PlayerData player : players.values()) {
             if (!player.isReady() && player.getCards().size() < 3) {
@@ -119,7 +147,7 @@ public class GameState {
         }
     }
 
-    private void determineWinner() {
+    private synchronized void determineWinner() {
         String bestPlayer = null;
         int maxScore = -1;
         int minCardCount = 99; 
@@ -170,15 +198,16 @@ public class GameState {
         }
     }
 
-    public Map<String, PlayerData> getPlayers() { return players; }
-    public String getWinner() { return winner; }
-    public String getStatus() { return status; }
+    public synchronized Map<String, PlayerData> getPlayers() { return players; }
+    public synchronized String getWinner() { return winner; }
+    public synchronized String getStatus() { return status; }
 
     public static class PlayerData {
         private List<Card> cards = new ArrayList<>();
         private int score;
         private int multiplier;
         private boolean ready = false;
+        private boolean restartReady = false;
 
         public List<Card> getCards() { return cards; }
         public int getScore() { return score; }
@@ -187,5 +216,7 @@ public class GameState {
         public void setMultiplier(int multiplier) { this.multiplier = multiplier; }
         public boolean isReady() { return ready; }
         public void setReady(boolean ready) { this.ready = ready; }
+        public boolean isRestartReady() { return restartReady; }
+        public void setRestartReady(boolean restartReady) { this.restartReady = restartReady; }
     }
 }
