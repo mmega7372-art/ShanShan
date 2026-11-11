@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ရှမ်းကိုးမီး</title>
+    <title>ရှမ်းကိုးမီး မျက်နှာချင်းဆိုင်</title>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     <style>
@@ -46,7 +46,6 @@
             color: #000;
         }
 
-        /* စားပွဲဝိုင်းပုံစံ Layout (အလယ်ဖဲပုံကို ပြိုင်ဘက်တွေက ဝိုင်းရံထားမည်) */
         .table-felt {
             background: #144614;
             border: 2px solid #ffd700;
@@ -54,14 +53,13 @@
             padding: 8px;
             margin: 8px 0;
             position: relative;
-            min-height: 280px;
+            min-height: 260px;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
             align-items: center;
         }
 
-        /* ထိပ်ပိုင်းနှင့် ဘေးဘက်ရှိ ပြိုင်ဘက်များ ဝိုင်းရံမည့်နေရာ */
         .opponents-ring {
             width: 100%;
             display: flex;
@@ -78,25 +76,25 @@
             min-width: 85px;
             flex: 1;
             max-width: 130px;
+            position: relative;
         }
 
-        /* အလယ်က အနီကဒ် (ဖဲပုံ) တည်နေရာ */
         .center-deck-area {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            margin: 10px 0;
+            margin: 6px 0;
         }
 
         .deck-pile { 
-            width: 45px; 
-            height: 65px; 
+            width: 42px; 
+            height: 60px; 
             background: #c0392b; 
             border: 2px solid #fff; 
             border-radius: 5px; 
-            line-height: 65px; 
-            font-size: 20px; 
+            line-height: 60px; 
+            font-size: 18px; 
             font-weight: bold; 
             cursor: pointer; 
             box-shadow: 0 4px 8px rgba(0,0,0,0.4);
@@ -104,33 +102,78 @@
         }
         .deck-pile:active { transform: scale(0.95); }
 
-        /* အောက်ဆုံးတွင် ရှိသော ကျွန်ုပ်၏ နေရာ */
         .my-box { 
             background: rgba(0, 0, 0, 0.4); 
             border-radius: 8px; 
-            padding: 8px; 
-            margin-top: 6px; 
+            padding: 6px; 
+            margin-top: 4px; 
             border: 2px solid #2ecc71; 
             width: 100%;
+            position: relative;
         }
 
         .card { 
             display: inline-block; 
-            width: 40px; 
-            height: 60px; 
+            width: 38px; 
+            height: 56px; 
             background: #fff; 
             color: #000; 
             border-radius: 4px; 
-            font-size: 14px; 
+            font-size: 13px; 
             font-weight: bold; 
             margin: 2px; 
-            line-height: 60px; 
+            line-height: 56px; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.3); 
             text-align: center;
             user-select: none;
         }
-        .card-back { background: #2980b9; color: #fff; font-size: 16px; line-height: 60px; cursor: pointer; }
+        .card-back { background: #2980b9; color: #fff; font-size: 15px; line-height: 56px; cursor: pointer; }
         .red { color: red; }
+
+        /* စနောက်သည့် စာသားများပေါ်မည့် Bubble ပုံစံ */
+        .chat-bubble {
+            position: absolute;
+            bottom: 105%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #fff;
+            color: #000;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: bold;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.4);
+            white-space: nowrap;
+            z-index: 10;
+            animation: fadeInOut 3s forwards;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, 5px); }
+            15% { opacity: 1; transform: translate(-50%, 0); }
+            85% { opacity: 1; transform: translate(-50%, 0); }
+            100% { opacity: 0; transform: translate(-50%, -5px); display: none; }
+        }
+
+        /* Quick Chat ခလုတ်များ */
+        .quick-chat-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 6px 0;
+            flex-wrap: wrap;
+        }
+        .chat-btn {
+            background: #34495e;
+            color: #fff;
+            border: 1px solid #ffd700;
+            border-radius: 6px;
+            padding: 6px 10px;
+            font-size: 12px;
+            font-family: 'Padauk', sans-serif;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        .chat-btn:active { background: #2c3e50; transform: scale(0.95); }
 
         .btn { 
             background: #ffd700; 
@@ -138,18 +181,18 @@
             font-size: 15px; 
             font-weight: bold; 
             border: none; 
-            padding: 10px 18px; 
+            padding: 9px 16px; 
             border-radius: 8px; 
             cursor: pointer; 
-            margin: 4px; 
-            min-width: 110px;
+            margin: 3px; 
+            min-width: 100px;
             -webkit-tap-highlight-color: transparent;
         }
         .btn-danger { background: #e74c3c; color: #fff; }
         .btn:disabled { background: #7f8c8d; cursor: not-allowed; opacity: 0.7; }
         
-        .status { font-size: 14px; margin: 4px 0; color: #ffeb3b; }
-        .result-box { background: #ffd700; color: #000; font-size: 16px; font-weight: bold; padding: 8px; border-radius: 8px; margin-top: 6px; }
+        .status { font-size: 13px; margin: 3px 0; color: #ffeb3b; }
+        .result-box { background: #ffd700; color: #000; font-size: 15px; font-weight: bold; padding: 6px; border-radius: 8px; margin-top: 4px; }
         #error-log { color: #ff6b6b; font-weight: bold; margin-top: 6px; font-size: 13px; }
         .hidden { display: none !important; }
     </style>
@@ -157,7 +200,7 @@
 <body>
 
 <div class="board">
-    <h2>♠️ ရှမ်းကိုးမီး ♣️</h2>
+    <h2>♠️ ရှမ်းကိုးမီး မျက်နှာချင်းဆိုင် ♣️</h2>
 
     <!-- Setup Panel -->
     <div id="setup-panel">
@@ -185,23 +228,31 @@
     <div id="game-panel" class="hidden">
         <div class="status" id="room-display">အခန်း: -</div>
         
-        <!-- စားပွဲဝိုင်းပုံစံ (အလယ်က အနီကဒ်ကို ပြိုင်ဘက်တွေက ဝိုင်းရံထားမည့် ပုံစံ) -->
+        <!-- စားပွဲဝိုင်းပုံစံ -->
         <div class="table-felt">
-            <!-- ထိပ်ဘက်ရှိ ပြိုင်ဘက်များ ဝိုင်းရံမည့် နေရာ -->
+            <!-- ထိပ်ဘက်ရှိ ပြိုင်ဘက်များ -->
             <div id="opponents-container" class="opponents-ring"></div>
 
             <!-- အလယ်က အနီကဒ် (Deck Pile) -->
             <div class="center-deck-area">
                 <div class="deck-pile" onclick="drawCard()" title="ကဒ်ဆွဲရန် နှိပ်ပါ">🂠</div>
-                <div id="game-status" style="font-size: 12px; color: #ffd700; margin-top: 2px;">(ဆွဲရန် ဖဲပုံကိုနှိပ်ပါ)</div>
+                <div id="game-status" style="font-size: 11px; color: #ffd700; margin-top: 2px;">(ဆွဲရန် ဖဲပုံကိုနှိပ်ပါ)</div>
             </div>
 
             <!-- အောက်ဆုံးရှိ ကျွန်ုပ်၏ နေရာ -->
-            <div class="my-box">
-                <div id="my-name" style="font-weight: bold; font-size: 13px; color: #55efc4; margin-bottom: 2px;">ကျွန်ုပ်</div>
+            <div class="my-box" id="my-seat-box">
+                <div id="my-name" style="font-weight: bold; font-size: 12px; color: #55efc4; margin-bottom: 2px;">ကျွန်ုပ်</div>
                 <div id="my-cards" style="display:flex; justify-content:center; gap:2px;"></div>
-                <div id="my-info" style="font-size: 12px; margin-top: 2px; color: #fff;">အမှတ်: ဖဲလှန်ပါ</div>
+                <div id="my-info" style="font-size: 11px; margin-top: 2px; color: #fff;">အမှတ်: ဖဲလှန်ပါ</div>
             </div>
+        </div>
+
+        <!-- 💬 စနောက်ရန် စာသားခလုတ်များ (Quick Chat) -->
+        <div class="quick-chat-container">
+            <button class="chat-btn" onclick="sendChat('ဘူကောင်လေး🫵🏻')">ဘူကောင်လေး🫵🏻</button>
+            <button class="chat-btn" onclick="sendChat('ဒါလေးများ😜')">ဒါလေးများ😜</button>
+            <button class="chat-btn" onclick="sendChat('ကရော်ကရော်🤪')">ကရော်ကရော်🤪</button>
+            <button class="chat-btn" onclick="sendChat('လာပြီဟေ့ 😎')">လာပြီဟေ့ 😎</button>
         </div>
 
         <!-- Action Buttons -->
@@ -210,7 +261,7 @@
         </div>
 
         <div id="result-container" class="result-box hidden"></div>
-        <button class="btn hidden" id="restart-btn" onclick="restartGame()">ပွဲသစ်စရန်</button>
+        <button class="btn" id="restart-btn" onclick="restartGame()">ပွဲသစ်စရန်</button>
     </div>
 </div>
 
@@ -222,6 +273,7 @@
     let revealedCards = new Set();
     let lastHandSignature = "";
     let currentGameData = null;
+    let isCountingDown = false;
 
     function getSelectedModeConfig() {
         const val = document.getElementById('gameMode').value;
@@ -244,7 +296,6 @@
         }
         errorLog.innerText = "";
 
-        // Railway URL သို့ ချိတ်ဆက်ခြင်း
         const socket = new SockJS('https://shanshan.up.railway.app/ws-game');
         stompClient = Stomp.over(socket);
         stompClient.debug = null; 
@@ -252,6 +303,11 @@
         stompClient.connect({}, function (frame) {
             stompClient.subscribe('/topic/room/' + roomId, function (response) {
                 showGameState(JSON.parse(response.body));
+            });
+
+            // Chat အတွက် subscribe ထပ်လုပ်ခြင်း
+            stompClient.subscribe('/topic/room/' + roomId + '/chat', function (response) {
+                showChatBubble(JSON.parse(response.body));
             });
 
             stompClient.send("/app/game.action", {}, JSON.stringify({
@@ -287,17 +343,73 @@
         }));
     }
 
-    function restartGame() {
-        revealedCards.clear();
-        lastHandSignature = "";
-        const config = getSelectedModeConfig();
-        stompClient.send("/app/game.action", {}, JSON.stringify({
-            type: "START",
+    // စနောက်သော စာသားများ ပို့ရန်
+    function sendChat(message) {
+        if (!stompClient) return;
+        stompClient.send("/app/game.chat", {}, JSON.stringify({
             roomId: roomId,
             playerName: playerName,
-            maxPlayers: config.maxPlayers,
-            withBots: config.withBots
+            message: message
         }));
+    }
+
+    // Chat Bubble ပြသရန်
+    function showChatBubble(chatData) {
+        let targetBox = null;
+        if (chatData.playerName === playerName) {
+            targetBox = document.getElementById('my-seat-box');
+        } else {
+            targetBox = document.getElementById('seat-' + chatData.playerName);
+        }
+
+        if (targetBox) {
+            // အဟောင်းရှိရင် ဖျက်မည်
+            let oldBubble = targetBox.querySelector('.chat-bubble');
+            if (oldBubble) oldBubble.remove();
+
+            let bubble = document.createElement('div');
+            bubble.className = 'chat-bubble';
+            bubble.innerText = chatData.message;
+            targetBox.appendChild(bubble);
+
+            setTimeout(() => {
+                bubble.remove();
+            }, 3000);
+        }
+    }
+
+    function restartGame() {
+        if (isCountingDown) return;
+        isCountingDown = true;
+
+        const restartBtn = document.getElementById('restart-btn');
+        restartBtn.disabled = true;
+
+        let timeLeft = 3;
+        restartBtn.innerText = `ပွဲသစ်စရန် (${timeLeft}စက္ကန့်)...`;
+
+        let timer = setInterval(function() {
+            timeLeft--;
+            if (timeLeft > 0) {
+                restartBtn.innerText = `ပွဲသစ်စရန် (${timeLeft}စက္ကန့်)...`;
+            } else {
+                clearInterval(timer);
+                isCountingDown = false;
+                restartBtn.disabled = false;
+                restartBtn.innerText = "ပွဲသစ်စရန်";
+
+                revealedCards.clear();
+                lastHandSignature = "";
+                const config = getSelectedModeConfig();
+                stompClient.send("/app/game.action", {}, JSON.stringify({
+                    type: "START",
+                    roomId: roomId,
+                    playerName: playerName,
+                    maxPlayers: config.maxPlayers,
+                    withBots: config.withBots
+                }));
+            }
+        }, 1000);
     }
 
     function flipCard(element, index, cardText, isRed) {
@@ -365,9 +477,9 @@
                     let oVal = oCard.value === 1 ? 'A' : (oCard.value === 11 ? 'J' : (oCard.value === 12 ? 'Q' : (oCard.value === 13 ? 'K' : oCard.value)));
                     
                     if (state.status === "FINISHED") {
-                        oppCardDisplay += `<div class="${oColor}" style="width:30px; height:45px; line-height:45px; font-size:11px;">${oVal}${oCard.suit}</div>`;
+                        oppCardDisplay += `<div class="${oColor}" style="width:28px; height:42px; line-height:42px; font-size:10px;">${oVal}${oCard.suit}</div>`;
                     } else {
-                        oppCardDisplay += `<div class="card card-back" style="width:30px; height:45px; line-height:45px; font-size:12px;">?</div>`;
+                        oppCardDisplay += `<div class="card card-back" style="width:28px; height:42px; line-height:42px; font-size:11px;">?</div>`;
                     }
                 });
 
@@ -375,8 +487,8 @@
                     ? `${pData.score}မှတ် (${pData.multiplier}x)` 
                     : `${cardCount}ချပ် ${pData.ready ? '✓' : ''}`;
 
-                opponentsHtml += `<div class="opponent-seat">
-                    <div style="font-weight: bold; font-size: 12px; color: #ff7675; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</div>
+                opponentsHtml += `<div class="opponent-seat" id="seat-${name}">
+                    <div style="font-weight: bold; font-size: 11px; color: #ff7675; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${name}</div>
                     <div style="display:flex; justify-content:center; gap:1px; margin: 2px 0;">${oppCardDisplay}</div>
                     <div style="font-size: 10px; color: #f1c40f;">${scoreText}</div>
                 </div>`;
@@ -405,7 +517,9 @@
         } else {
             actionButtons.classList.remove('hidden');
             resultContainer.classList.add('hidden');
-            restartBtn.classList.add('hidden');
+            if (!isCountingDown) {
+                restartBtn.classList.add('hidden');
+            }
         }
     }
 
