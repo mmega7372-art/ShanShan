@@ -33,7 +33,6 @@ public class GameController {
 
         GameState state = activeRooms.computeIfAbsent(roomId, k -> new GameState());
 
-        // Player အရေအတွက် (Mode) နှင့် Bot ပါမပါ သတ်မှတ်ခြင်း
         if (request.getMaxPlayers() > 0) {
             state.setMaxPlayers(request.getMaxPlayers());
             state.setWithBots(request.isWithBots());
@@ -53,12 +52,13 @@ public class GameController {
             state.drawCard(playerName);
         } else if ("STAND".equals(request.getType())) {
             state.setPlayerReady(playerName);
+        } else if ("RESTART_VOTE".equals(request.getType())) {
+            state.handleRestartVote(playerName);
         }
 
         messagingTemplate.convertAndSend("/topic/room/" + roomId, new GameResponse(state));
     }
 
-    // Quick Chat / စနောက်သည့် စာသားများကို လက်ခံပြီး အခန်းထဲသို့ ပို့ပေးရန်
     @MessageMapping("/game.chat")
     public void handleChatAction(ChatRequest request) {
         if (request.getRoomId() != null && !request.getRoomId().isEmpty()) {
