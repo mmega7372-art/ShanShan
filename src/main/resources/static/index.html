@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>ရှမ်းကိုးမီး မျက်နှာချင်းဆိုင်</title>
+    <title>ရှမ်းကိုးမီး</title>
     <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
     <style>
@@ -200,7 +200,7 @@
 <body>
 
 <div class="board">
-    <h2>♠️ ရှမ်းကိုးမီး မျက်နှာချင်းဆိုင် ♣️</h2>
+    <h2>♠️ ရှမ်းကိုးမီး ♣️</h2>
 
     <!-- Setup Panel -->
     <div id="setup-panel">
@@ -208,16 +208,16 @@
         <input type="text" id="roomId" placeholder="အခန်းနံပါတ် (ဥပမာ - 123)"><br>
         <select id="gameMode">
             <optgroup label="🤖 ဘော့ (Bots) ပါဝင်သော Mode များ">
-                <option value="bot_2">လူ ၁ ယောက် + ၁ ဘော့ (၂ ယောက်ဆော့)</option>
-                <option value="bot_3">လူ ၁ ယောက် + ၂ ဘော့ (၃ ယောက်ဆော့)</option>
-                <option value="bot_4">လူ ၁ ယောက် + ၃ ဘော့ (၄ ယောက်ဆော့)</option>
-                <option value="bot_5" selected>လူ ၁ ယောက် + ၄ ဘော့ (၅ ယောက်ဆော့)</option>
+                <option value="bot_2">လူ ၁ ယောက် + ၁ bot🤖 (၂ ယောက်ဆော့)</option>
+                <option value="bot_3">လူ ၁ ယောက် + ၂ bots🤖 (၃ ယောက်ဆော့)</option>
+                <option value="bot_4">လူ ၁ ယောက် + ၃ bots🤖 (၄ ယောက်ဆော့)</option>
+                <option value="bot_5" selected>လူ ၁ ယောက် + ၄ bots🤖 (၅ ယောက်ဆော့)</option>
             </optgroup>
             <optgroup label="👥 လူစစ်စစ်များသာ (Bot လုံးဝမပါ / PvP)">
-                <option value="pvp_2">လူစစ်စစ် ၂ ယောက် (PvP)</option>
-                <option value="pvp_3">လူစစ်စစ် ၃ ယောက် (PvP)</option>
-                <option value="pvp_4">လူစစ်စစ် ၄ ယောက် (PvP)</option>
-                <option value="pvp_5">လူစစ်စစ် ၅ ယောက် (PvP)</option>
+                <option value="pvp_2">လူ ၂ ယောက် (PvP)</option>
+                <option value="pvp_3">လူ ၃ ယောက် (PvP)</option>
+                <option value="pvp_4">လူ ၄ ယောက် (PvP)</option>
+                <option value="pvp_5">လူ ၅ ယောက် (PvP)</option>
             </optgroup>
         </select><br>
         <button class="btn" onclick="connect()">အခန်းသို့ ဝင်မည်</button>
