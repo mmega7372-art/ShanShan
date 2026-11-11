@@ -58,6 +58,14 @@ public class GameController {
         messagingTemplate.convertAndSend("/topic/room/" + roomId, new GameResponse(state));
     }
 
+    // Quick Chat / စနောက်သည့် စာသားများကို လက်ခံပြီး အခန်းထဲသို့ ပို့ပေးရန်
+    @MessageMapping("/game.chat")
+    public void handleChatAction(ChatRequest request) {
+        if (request.getRoomId() != null && !request.getRoomId().isEmpty()) {
+            messagingTemplate.convertAndSend("/topic/room/" + request.getRoomId() + "/chat", request);
+        }
+    }
+
     @EventListener
     public void handleWebSocketDisconnectListener(SessionDisconnectEvent event) {
         StompHeaderAccessor headerAccessor = StompHeaderAccessor.wrap(event.getMessage());
