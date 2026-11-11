@@ -6,16 +6,41 @@ public class GameState {
     private Map<String, PlayerData> players = new HashMap<>();
     private List<Card> deck = new ArrayList<>();
     private String winner = null;
-    private String status = "PLAYING"; // "PLAYING" or "FINISHED"
+    private String status = "PLAYING"; 
+    private int maxPlayers = 2; 
+    private boolean withBots = true; // Default: Bot ဖြင့်
+
+    public void setMaxPlayers(int maxPlayers) { this.maxPlayers = maxPlayers; }
+    public int getMaxPlayers() { return maxPlayers; }
+
+    public void setWithBots(boolean withBots) { this.withBots = withBots; }
+    public boolean isWithBots() { return withBots; }
 
     public void addPlayer(String playerName) {
         players.computeIfAbsent(playerName, k -> new PlayerData());
+    }
+
+    public void addBotsIfNeeded() {
+        // Mode ပြောင်းလဲသည့်အခါ Bot အဟောင်းများကို အရင်ဖယ်ရှားပေးခြင်း
+        players.keySet().removeIf(name -> name.startsWith("🤖 Bot"));
+
+        if (!withBots) return; // PvP Mode ဖြစ်ပါက Bot လုံးဝ မထည့်ပါ
+        
+        // ရွေးချယ်ထားသော maxPlayers အရေအတွက် ပြည့် تر တိုင်အောင် Bot အသစ်များ ထည့်မည်
+        while (players.size() < maxPlayers) {
+            int botIndex = players.size() + 1;
+            String botName = "🤖 Bot " + botIndex;
+            players.computeIfAbsent(botName, k -> new PlayerData());
+        }
     }
 
     public void resetAndDeal() {
         deck.clear();
         winner = null;
         status = "PLAYING";
+        
+        addBotsIfNeeded();
+
         String[] suits = {"♥", "♦", "♣", "♠"};
         for (String suit : suits) {
             for (int i = 1; i <= 13; i++) {
@@ -34,6 +59,8 @@ public class GameState {
                 player.setMultiplier(ShanKoeMheeEngine.calculateMultiplier(player.getCards()));
             }
         }
+
+        processBotActions();
     }
 
     public void drawCard(String playerName) {
@@ -58,9 +85,26 @@ public class GameState {
         }
     }
 
-    private void checkGameEnd() {
-        if (players.size() < 2) return;
+    private void processBotActions() {
+        if (!withBots) return;
 
+        for (Map.Entry<String, PlayerData> entry : players.entrySet()) {
+            String name = entry.getKey();
+            PlayerData pData = entry.getValue();
+            if (name.startsWith("🤖 Bot")) {
+                int score = pData.getScore();
+                if (score < 6 && pData.getCards().size() < 3 && !deck.isEmpty()) {
+                    pData.getCards().add(deck.remove(0));
+                    pData.setScore(ShanKoeMheeEngine.calculateScore(pData.getCards()));
+                    pData.setMultiplier(ShanKoeMheeEngine.calculateMultiplier(pData.getCards()));
+                }
+                pData.setReady(true);
+            }
+        }
+        checkGameEnd();
+    }
+
+    private void checkGameEnd() {
         boolean allReady = true;
         for (PlayerData player : players.values()) {
             if (!player.isReady() && player.getCards().size() < 3) {
@@ -101,20 +145,17 @@ public class GameState {
                     bestPlayer = entry.getKey();
                     isTie = false;
                 } else if (score == maxScore) {
-                    // (၁) အမှတ်တူလျှင် ကဒ်အရေအတွက် နည်းသူ (၂ ကဒ်ဆွဲသူ) က နိုင်မည်
                     if (cardCount < minCardCount) {
                         minCardCount = cardCount;
                         maxMultiplier = multiplier;
                         bestPlayer = entry.getKey();
                         isTie = false;
                     } else if (cardCount == minCardCount) {
-                        // (၂) ကဒ်အရေအတွက်ပါ တူနေလျှင် မြှောက်ကြိမ် (Multiplier) ပိုကြီးသူက နိုင်မည်
                         if (multiplier > maxMultiplier) {
                             maxMultiplier = multiplier;
                             bestPlayer = entry.getKey();
                             isTie = false;
                         } else if (multiplier == maxMultiplier) {
-                            // အားလုံးတူနေလျှင် သရေ (Tie)
                             isTie = true;
                         }
                     }
